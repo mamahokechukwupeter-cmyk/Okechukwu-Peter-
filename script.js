@@ -12,29 +12,35 @@ const ageInput = document.getElementById("age");
    REAL-TIME VALIDATION
 ========================= */
 
-// FULL NAME
-nameInput.addEventListener("input", () => {
+function validateName() {
+    const nameParts = nameInput.value.trim().split(/\s+/).filter(Boolean);
 
-    if (nameInput.value.trim().split(" ").length < 2) {
+    if (nameParts.length < 2) {
         setError(nameInput, "Enter first and last name");
-    } else {
-        setSuccess(nameInput);
+        return false;
     }
 
-});
+    setSuccess(nameInput);
+    return true;
+}
+
+function validateEmail() {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[A-Za-z]{2,}$/;
+
+    if (!emailPattern.test(emailInput.value.trim())) {
+        setError(emailInput, "Invalid email. Example: user@example.com");
+        return false;
+    }
+
+    setSuccess(emailInput);
+    return true;
+}
+
+// FULL NAME
+nameInput.addEventListener("input", validateName);
 
 // EMAIL
-emailInput.addEventListener("input", () => {
-
-    let emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
-
-    if (!emailInput.value.match(emailPattern)) {
-        setError(emailInput, "Invalid email");
-    } else {
-        setSuccess(emailInput);
-    }
-
-});
+emailInput.addEventListener("input", validateEmail);
 
 // PASSWORD
 passwordInput.addEventListener("input", () => {
@@ -43,7 +49,7 @@ passwordInput.addEventListener("input", () => {
     /^(?=.*[A-Z])(?=.*\d)(?=.*[\W]).{8,}$/;
 
     if (!passwordInput.value.match(passwordPattern)) {
-        setError(passwordInput, "Weak password");
+        setError(passwordInput, "Password must be 8+ chars, include uppercase, number, and symbol");
     } else {
         setSuccess(passwordInput);
     }
@@ -80,20 +86,18 @@ form.addEventListener("submit", function(e) {
 
     e.preventDefault();
 
-    if (
-        nameInput.classList.contains("success") &&
-        emailInput.classList.contains("success") &&
-        passwordInput.classList.contains("success") &&
-        confirmPasswordInput.classList.contains("success") &&
-        ageInput.classList.contains("success")
-    ) {
+    const isNameValid = validateName();
+    const isEmailValid = validateEmail();
+    const isPasswordValid = passwordInput.classList.contains("success");
+    const isConfirmPasswordValid = confirmPasswordInput.classList.contains("success");
+    const isAgeValid = ageInput.classList.contains("success");
 
+    if (isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid && isAgeValid) {
         alert("Registration Successful!");
-
+        form.reset();
+        [nameInput, emailInput, passwordInput, confirmPasswordInput, ageInput].forEach(input => input.classList.remove("success", "error"));
     } else {
-
         alert("Please correct the errors.");
-
     }
 
 });
@@ -106,6 +110,7 @@ function setError(input, message) {
 
     input.classList.add("error");
     input.classList.remove("success");
+    input.title = message;
 
     input.nextElementSibling.textContent = message;
 
@@ -115,6 +120,7 @@ function setSuccess(input) {
 
     input.classList.add("success");
     input.classList.remove("error");
+    input.removeAttribute("title");
 
     input.nextElementSibling.textContent = "";
 
